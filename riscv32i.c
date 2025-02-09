@@ -71,10 +71,29 @@ void load() {
     }
 }
 
+void immediate() {
+    int function = (instruction >> 12) & 0x7;
+    int rs = (instruction >> 15) & 0x1F;
+    int rd = (instruction >> 7) & 0x1F;
+    int upper = (instruction >> 31) ? 0xFFFFF000 : 0;
+    int lower = (instruction >> 20) & 0xFFF;
+    int immediate = upper | lower;
+    // int byteAddress = immediate + gpr[rs]; 
+
+    switch (function)
+    {
+    case 0:
+        gpr[rd] = gpr[rs] + immediate;
+        break;
+    default:
+        break;
+    }
+}
+
 int main(int argc, char *argv[2]) {
     if (argc > 2)
 	{
-		fprintf(stderr, "Usage: %s [memory_file]\n", argv[0]);
+		printf(stderr, "Usage: %s [memory_file]\n", argv[0]);
         return EXIT_FAILURE;
 	}
 
@@ -84,9 +103,11 @@ int main(int argc, char *argv[2]) {
         return EXIT_FAILURE;
     }
 
+    gpr[2] = -1;
+
     while (fscanf(memFile, "%x: %x", &address, &instruction) == 2) {
         if (address + 3 >= STACK_SIZE) {
-            fprintf(stderr, "Error: Address out of bounds (0x%hx)\n", address);
+            printf(stderr, "Error: Address out of bounds (0x%hx)\n", address);
             continue;
         }
         memory[address] = instruction;
@@ -107,6 +128,10 @@ int main(int argc, char *argv[2]) {
             break;
         case 0x3:
             load();
+            pc += 4;
+            break;
+        case 0x13:
+            immediate();
             pc += 4;
             break;
         default:
