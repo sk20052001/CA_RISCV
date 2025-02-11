@@ -7,7 +7,7 @@
 FILE *memFile;
 
 uint8_t memory[STACK_SIZE];
-uint32_t address, instruction, pc, gpr[32], instructionCount = 0, opcode;
+uint32_t address, instruction, pc, gpr[32], opcode;
 
 void store() {
     uint32_t function = (instruction >> 12) & 0x7;
@@ -88,13 +88,13 @@ void immediate() {
     }
 }
 
-int main(int argc, char *argv[2]) {
+int main(int argc, char *argv[4]) {
     if (argc > 4)
 	{
 		printf(stderr, "Usage: %s [mem_file] [starting address] [stack address]\n", argv[0]);
         return EXIT_FAILURE;
 	}
-    memFile = argc > 1 ? fopen(argv[1], "r") : fopen("program.mem", "r");
+    memFile = argc > 1 ? fopen(argv[1], "r") : fopen("test.mem", "r");
     if (!memFile) {
         perror("Error opening file");
         return EXIT_FAILURE;
@@ -111,8 +111,9 @@ int main(int argc, char *argv[2]) {
         memory[address + 1] = instruction >> 8;
         memory[address + 2] = instruction >> 16;
         memory[address + 3] = instruction >> 24;
-        instructionCount += 4;
     }
+
+    fclose(memFile);
 
     while (memory[pc] | (memory[pc + 1] << 8) | (memory[pc + 2] << 16) | (memory[pc + 3] << 24)) {
         instruction = (memory[pc] | (memory[pc + 1] << 8) | (memory[pc + 2] << 16) | (memory[pc + 3] << 24));
@@ -136,8 +137,6 @@ int main(int argc, char *argv[2]) {
             break;
         }
     }
-
-    fclose(memFile);
 
     return 0;
 }
