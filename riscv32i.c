@@ -6,19 +6,18 @@
 
 FILE *memFile;
 
-int8_t memory[STACK_SIZE];
-uint16_t address;
-int instruction, pc = 0, gpr[32], instructionCount = 0, opcode;
+uint8_t memory[STACK_SIZE];
+uint32_t address, instruction, pc, gpr[32], instructionCount = 0, opcode;
 
 void store() {
-    int function = (instruction >> 12) & 0x7;
-    int rs1 = (instruction >> 15) & 0x1F;
-    int rs2 = (instruction >> 20) & 0x1F;
-    int upper = (instruction >> 31) ? 0xFFFFF000 : 0;
-    int middle = (instruction >> 20) & 0xFE0;
-    int lower = (instruction >> 7) & 0x1F;
-    int immediate = upper | middle | lower;
-    int byteAddress = immediate + gpr[rs1];
+    uint32_t function = (instruction >> 12) & 0x7;
+    uint32_t rs1 = (instruction >> 15) & 0x1F;
+    uint32_t rs2 = (instruction >> 20) & 0x1F;
+    uint32_t upper = (instruction >> 31) ? 0xFFFFF000 : 0;
+    uint32_t middle = (instruction >> 20) & 0xFE0;
+    uint32_t lower = (instruction >> 7) & 0x1F;
+    uint32_t immediate = upper | middle | lower;
+    uint32_t byteAddress = immediate + gpr[rs1];
 
     switch (function)
     {
@@ -41,21 +40,21 @@ void store() {
 }
 
 void load() {
-    int function = (instruction >> 12) & 0x7;
-    int rs = (instruction >> 15) & 0x1F;
-    int rd = (instruction >> 7) & 0x1F;
-    int upper = (instruction >> 31) ? 0xFFFFF000 : 0;
-    int lower = (instruction >> 20) & 0xFFF;
-    int immediate = upper | lower;
-    int byteAddress = immediate + gpr[rs];
+    uint32_t function = (instruction >> 12) & 0x7;
+    uint32_t rs = (instruction >> 15) & 0x1F;
+    uint32_t rd = (instruction >> 7) & 0x1F;
+    uint32_t upper = (instruction >> 31) ? 0xFFFFF000 : 0;
+    uint32_t lower = (instruction >> 20) & 0xFFF;
+    uint32_t immediate = upper | lower;
+    uint32_t byteAddress = immediate + gpr[rs];
 
     switch (function)
     {
     case 0:
-        gpr[rd] = memory[byteAddress];
+        gpr[rd] = (memory[byteAddress] >> 7) ? (memory[byteAddress] | 0xFFFFFF00) : memory[byteAddress] & 0xFF;
         break;
     case 1:
-        gpr[rd] = (memory[byteAddress] | (memory[byteAddress + 1] << 8));
+        gpr[rd] = (memory[byteAddress + 1] >> 7) ? (memory[byteAddress] | (memory[byteAddress + 1] << 8) | 0xFFFF0000) : ((memory[byteAddress] | (memory[byteAddress + 1] << 8)) & 0xFFFF);
         break;
     case 2:
         gpr[rd] = (memory[byteAddress] | (memory[byteAddress + 1] << 8) | (memory[byteAddress + 2] << 16) | (memory[byteAddress + 3] << 24));
@@ -72,13 +71,12 @@ void load() {
 }
 
 void immediate() {
-    int function = (instruction >> 12) & 0x7;
-    int rs = (instruction >> 15) & 0x1F;
-    int rd = (instruction >> 7) & 0x1F;
-    int upper = (instruction >> 31) ? 0xFFFFF000 : 0;
-    int lower = (instruction >> 20) & 0xFFF;
-    int immediate = upper | lower;
-    // int byteAddress = immediate + gpr[rs]; 
+    uint32_t function = (instruction >> 12) & 0x7;
+    uint32_t rs = (instruction >> 15) & 0x1F;
+    uint32_t rd = (instruction >> 7) & 0x1F;
+    uint32_t upper = (instruction >> 31) ? 0xFFFFF000 : 0;
+    uint32_t lower = (instruction >> 20) & 0xFFF;
+    uint32_t immediate = upper | lower;
 
     switch (function)
     {
@@ -91,19 +89,18 @@ void immediate() {
 }
 
 int main(int argc, char *argv[2]) {
-    if (argc > 2)
+    if (argc > 4)
 	{
-		printf(stderr, "Usage: %s [memory_file]\n", argv[0]);
+		printf(stderr, "Usage: %s [mem_file] [starting address] [stack address]\n", argv[0]);
         return EXIT_FAILURE;
 	}
-
-    memFile = argc == 2 ? fopen(argv[1], "r") : fopen("program.mem", "r");
+    memFile = argc > 1 ? fopen(argv[1], "r") : fopen("program.mem", "r");
     if (!memFile) {
         perror("Error opening file");
         return EXIT_FAILURE;
     }
-
-    gpr[2] = -1;
+    pc = argc > 2 ? argv[2] : 0;
+    gpr[2] = argc > 3 ? argv[3] : 65536;
 
     while (fscanf(memFile, "%x: %x", &address, &instruction) == 2) {
         if (address + 3 >= STACK_SIZE) {
@@ -117,7 +114,7 @@ int main(int argc, char *argv[2]) {
         instructionCount += 4;
     }
 
-    while (pc < instructionCount) {
+    while (memory[pc] | (memory[pc + 1] << 8) | (memory[pc + 2] << 16) | (memory[pc + 3] << 24)) {
         instruction = (memory[pc] | (memory[pc + 1] << 8) | (memory[pc + 2] << 16) | (memory[pc + 3] << 24));
         opcode = instruction & 0x7F;
         switch (opcode)
