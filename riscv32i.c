@@ -26,7 +26,7 @@ void registerFileDisplay() {
     printf("Function arguments/ Return values:\na0: %08x\ta1: %08x\n", gpr[10], gpr[11]);
     printf("Function arguments:\na2: %08x\ta3: %08x\ta4: %08x\ta5: %08x\ta6: %08x\ta7: %08x\n", gpr[12], gpr[13], gpr[14], gpr[15], gpr[16], gpr[17]);
     printf("Saved Register:\ns2: %08x\ts3: %08x\ts4: %08x\ts5: %08x\ts6: %08x\n", gpr[18], gpr[19], gpr[20], gpr[21], gpr[22]);
-    printf("s2: %08x\ts3: %08x\ts4: %08x\ts5: %08x\ts6: %08x\n", gpr[23], gpr[24], gpr[25], gpr[26], gpr[27]);
+    printf("s7: %08x\ts8: %08x\ts9: %08x\ts10: %08x\ts11: %08x\n", gpr[23], gpr[24], gpr[25], gpr[26], gpr[27]);
     printf("Temporaries:\nt3: %08x\tt4: %08x\tt5: %08x\tt6: %08x\n\n", gpr[28], gpr[29], gpr[30], gpr[31]);
 }
 
