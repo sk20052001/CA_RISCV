@@ -177,7 +177,7 @@ int main(int argc, char *argv[4]) {
         }
     }
     pc = argc > 2 ? atoi(argv[2]) : 0;
-    gpr[2] = argc > 3 ? atoi(argv[3]) : MEMORY_SIZE;
+    SP = argc > 3 ? atoi(argv[3]) : MEMORY_SIZE;
 
     while (fscanf(memFile, "%x: %x", &address, &instruction) == 2) {
         if (address + 3 >= MEMORY_SIZE) {
