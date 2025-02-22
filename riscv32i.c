@@ -161,6 +161,66 @@ void auipc() {
     gpr[rd] = (instruction & 0xFFFFF000) + pc;
 }
 
+void arithmetic(){
+    uint32_t funct3 = FUNCT3(instruction);
+    uint32_t funct7 = FUNCT7(instruction);
+    uint32_t rs1 = RS1(instruction);
+    uint32_t rs2 = RS2(instruction);
+    uint32_t rd = RD(instruction);
+    uint32_t shamt = RS2(instruction);
+    int32_t rs1_signed = (int) gpr[rs1];
+    if(funct7 == 32){
+        switch (funct3){
+            case 0:
+                display_pc_instruction("sub");
+                gpr[rd] = gpr[rs1] - gpr[rs2];
+                break;
+            case 5:
+                display_pc_instruction("sra");
+                gpr[rd] = rs1_signed >> gpr[shamt];
+                break;
+        }
+        
+    }
+    else if (funct7 == 0){
+        switch(funct3){
+            case 0:
+                display_pc_instruction("add");
+                gpr[rd] = gpr[rs1] + gpr[rs2];
+                break;
+            case 1:
+                display_pc_instruction("sll");
+                gpr[rd] = gpr[rs1] << gpr[shamt];
+                break;
+            case 2:
+                display_pc_instruction("slt");
+                gpr[rd] = gpr[rs1] < gpr[rs2];
+                break;
+            case 3:
+                display_pc_instruction("sltu");
+                gpr[rd] = (uint32_t)gpr[rs1] < (uint32_t)gpr[rs2];
+                break;
+            case 4:
+                display_pc_instruction("xor");
+                gpr[rd] = gpr[rs1] ^ gpr[rs2];
+                break;
+            case 5:
+                display_pc_instruction("srl");
+                gpr[rd] = gpr[rs1] >> gpr[rs2];
+                break;
+            case 6:
+                display_pc_instruction("or");
+                gpr[rd] = gpr[rs1] | gpr[rs2];
+                break;
+            case 7:
+                display_pc_instruction("and");
+                gpr[rd] = gpr[rs1] & gpr[rs2];
+                break;
+        }
+    }
+    
+}
+
 int main(int argc, char *argv[4]) {
     if (argc > 4)
 	{
@@ -215,6 +275,10 @@ int main(int argc, char *argv[4]) {
                 break;
             case 0x17:
                 auipc();
+                pc += PC_INCREMENT;
+                break;
+            case 0x33:
+                arithmetic();
                 pc += PC_INCREMENT;
                 break;
             default:
