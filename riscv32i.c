@@ -176,11 +176,14 @@ void logical() {
     switch (funct3) {
         case 0x0:
             display_pc_instruction("addi");
-            gpr[rd] = gpr[rs1] + immediate;
+            gpr[rd] = gpr[rs1] + immediate ;
             //checking for overflow
-            if ((immediate & 0x80000000 == gpr[rs1] & 0x80000000) && (immediate & 0x80000000 != gpr[rd] & 0x80000000)) {
+ /*           if ((immediate & 0x80000000 == gpr[rs1] & 0x80000000) && (immediate & 0x80000000 != gpr[rd] & 0x80000000)) {
                 printf("Overflow in ADDI");
             }
+            break;
+            */
+            break;
         case 0x2:
             display_pc_instruction("slti");
             gpr[rd] = ((int32_t)gpr[rs1] < (int32_t)immediate);
@@ -224,7 +227,7 @@ int main(int argc, char *argv[4]) {
 		printf("Usage: %s [mem_file] [starting address] [stack address]\n", argv[0]);
         return 0;
 	}
-    memFile = argc > 1 ? fopen(argv[1], "r") : fopen("test.mem", "r");
+    memFile = argc > 1 ? fopen(argv[1], "r") : fopen("slti2.mem", "r");
     if (!memFile) {
         perror("Error opening file");
         memFile = fopen("test.mem", "r");
@@ -262,10 +265,11 @@ int main(int argc, char *argv[4]) {
                 load();
                 pc += PC_INCREMENT;
                 break;
-            case 0x13:
+/*            case 0x13:
                 registerImmediate();
                 pc += PC_INCREMENT;
                 break;
+*/
             case 0x37:
                 lui();
                 pc += PC_INCREMENT;
@@ -274,13 +278,12 @@ int main(int argc, char *argv[4]) {
                 auipc();
                 pc += PC_INCREMENT;
                 break;
-       
+
             // Siddesh starts here
             case 0x13:
                 logical();
                 pc += PC_INCREMENT;
                 break;
-            case
 
             default:
                 pc += PC_INCREMENT;
