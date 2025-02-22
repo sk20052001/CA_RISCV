@@ -168,7 +168,7 @@ void arithmetic(){
     uint32_t rs2 = RS2(instruction);
     uint32_t rd = RD(instruction);
     uint32_t shamt = RS2(instruction);
-    int32_t rs1_signed = (int) gpr[rs1];
+    int32_t rs1_signed = (int32_t) gpr[rs1];
     if(funct7 == 32){
         switch (funct3){
             case 0:
@@ -177,7 +177,7 @@ void arithmetic(){
                 break;
             case 5:
                 display_pc_instruction("sra");
-                gpr[rd] = rs1_signed >> gpr[shamt];
+                gpr[rd] = (uint32_t)(rs1_signed >> gpr[shamt]);
                 break;
         }
         
@@ -194,11 +194,11 @@ void arithmetic(){
                 break;
             case 2:
                 display_pc_instruction("slt");
-                gpr[rd] = gpr[rs1] < gpr[rs2];
+                gpr[rd] = ((int32_t)gpr[rs1] < (int32_t)gpr[rs2])? 1 : 0;
                 break;
             case 3:
                 display_pc_instruction("sltu");
-                gpr[rd] = (uint32_t)gpr[rs1] < (uint32_t)gpr[rs2];
+                gpr[rd] = (gpr[rs1] < gpr[rs2]) ? 1 : 0;
                 break;
             case 4:
                 display_pc_instruction("xor");
@@ -206,7 +206,7 @@ void arithmetic(){
                 break;
             case 5:
                 display_pc_instruction("srl");
-                gpr[rd] = gpr[rs1] >> gpr[rs2];
+                gpr[rd] = gpr[rs1] >> gpr[shamt];
                 break;
             case 6:
                 display_pc_instruction("or");
