@@ -130,6 +130,7 @@ void load() {
     }
 }
 
+/*
 void registerImmediate() {
     uint32_t funct3 = FUNCT3(instruction);
     uint32_t funct7 = FUNCT7(instruction);
@@ -148,6 +149,7 @@ void registerImmediate() {
         break;
     }
 }
+*/
 
 void lui() {
     uint32_t rd = UPPER_IMMEDIATE(instruction);
@@ -159,6 +161,61 @@ void auipc() {
     uint32_t rd = UPPER_IMMEDIATE(instruction);
     display_pc_instruction("auipc");
     gpr[rd] = (instruction & 0xFFFFF000) + pc;
+}
+
+// Siddesh function starts here
+
+void logical() {
+    uint32_t rd = RD(instruction);
+    uint32_t funct3 = FUNCT3(instruction);
+    uint32_t rs1 = RS1(instruction);
+    uint32_t immediate = IMMEDIATE(instruction);
+    uint32_t shamt = RS2(instruction);
+    uint32_t funct7 = FUNCT7(instruction);
+
+    switch (funct3) {
+        case 0x0:
+            display_pc_instruction("addi");
+            gpr[rd] = gpr[rs1] + immediate;
+            //checking for overflow
+            if ((immediate & 0x80000000 == gpr[rs1] & 0x80000000) && (immediate & 0x80000000 != gpr[rd] & 0x80000000)) {
+                printf("Overflow in ADDI");
+            }
+        case 0x2:
+            display_pc_instruction("slti");
+            gpr[rd] = ((int32_t)gpr[rs1] < (int32_t)immediate);
+            break;
+        case 0x3:
+            display_pc_instruction("sltiu");
+            gpr[rd] = (gpr[rs1] < immediate);
+            break;
+        case 0x4:
+            display_pc_instruction("xori");
+            gpr[rd] = gpr[rs1] ^ immediate;
+            break;
+        case 0x6:
+            display_pc_instruction("ori");
+            gpr[rd] = gpr[rs1] | immediate;
+            break;
+        case 0x7:
+            display_pc_instruction("andi");
+            gpr[rd] = gpr[rs1] & immediate;
+            break;
+        case 0x1:
+            display_pc_instruction("slli");
+            gpr[rd] = gpr[rs1] << shamt;
+            break;
+        case 0x5:
+            if (instruction & 0x40000000) {
+                display_pc_instruction("srai");
+                gpr[rd] = (gpr[rs1] & 0x80000000) ? (gpr[rs1] >> shamt | ~(0xFFFFFFFF >> shamt)) : gpr[rs1] >> shamt;
+                break;
+            } else {
+                display_pc_instruction("srli");
+                gpr[rd] = gpr[rs1] >> shamt;
+                break;
+            }
+    }
 }
 
 int main(int argc, char *argv[4]) {
@@ -217,6 +274,14 @@ int main(int argc, char *argv[4]) {
                 auipc();
                 pc += PC_INCREMENT;
                 break;
+       
+            // Siddesh starts here
+            case 0x13:
+                logical();
+                pc += PC_INCREMENT;
+                break;
+            case
+
             default:
                 pc += PC_INCREMENT;
                 break;
