@@ -8,6 +8,7 @@ FILE *memFile;
 uint8_t memory[MEMORY_SIZE];
 uint32_t address, instruction, pc, gpr[32] = {0}, opcode;
 
+// STart of Author: Sanjeev Krishnan
 void display_pc_instruction(char *instructionType) {
     printf("PC: %08x\n", pc);
     printf("Instruction type: %s\tInstruction: %08x\n\n", instructionType, instruction);
@@ -30,8 +31,7 @@ void displayRegisterFile() {
 }
 
 void writeMem(uint32_t byteAddress, int numberOfBytes, uint32_t data) {
-    switch (numberOfBytes)
-    {
+    switch (numberOfBytes) {
         case LB:
             memory[byteAddress] = data;
             break;
@@ -51,8 +51,7 @@ void writeMem(uint32_t byteAddress, int numberOfBytes, uint32_t data) {
 }
 
 uint32_t readMem(uint32_t byteAddress, int numberOfBytes) {
-    switch (numberOfBytes)
-    {
+    switch (numberOfBytes) {
         case LB:
             return memory[byteAddress] & 0xFF;
             break;
@@ -74,22 +73,21 @@ void store() {
     uint32_t immediate = STORE_IMMEDIATE(instruction);
     uint32_t byteAddress = immediate + gpr[rs1];
 
-    switch (function)
-    {
-    case 0:
-        display_pc_instruction("sb");
-        writeMem(byteAddress, 1, gpr[rs2]);
-        break;
-    case 1:
-        display_pc_instruction("sh");
-        writeMem(byteAddress, 2, gpr[rs2]);
-        break;
-    case 2:
-        display_pc_instruction("sw");
-        writeMem(byteAddress, 4, gpr[rs2]);
-        break;
-    default:
-        break;
+    switch (function) {
+        case 0:
+            display_pc_instruction("sb");
+            writeMem(byteAddress, 1, gpr[rs2]);
+            break;
+        case 1:
+            display_pc_instruction("sh");
+            writeMem(byteAddress, 2, gpr[rs2]);
+            break;
+        case 2:
+            display_pc_instruction("sw");
+            writeMem(byteAddress, 4, gpr[rs2]);
+            break;
+        default:
+            break;
     }
 }
 
@@ -101,35 +99,36 @@ void load() {
     uint32_t byteAddress = immediate + gpr[rs1];
     uint32_t loadedValue;
 
-    switch (function)
-    {
-    case 0:
-        display_pc_instruction("lb");
-        loadedValue = readMem(byteAddress, LB);
-        gpr[rd] = (loadedValue & 0x80) ? (loadedValue | 0xFFFFFF00) : loadedValue;
-        break;
-    case 1:
-        display_pc_instruction("lh");
-        loadedValue = readMem(byteAddress, LH);
-        gpr[rd] = (loadedValue & 0x8000) ? (loadedValue | 0xFFFF0000) : loadedValue;
-        break;
-    case 2:
-        display_pc_instruction("lw");
-        gpr[rd] = readMem(byteAddress, LW);
-        break;
-    case 4:
-        display_pc_instruction("lbu");
-        gpr[rd] = readMem(byteAddress, LB);
-        break;
-    case 5:
-        display_pc_instruction("lhu");
-        gpr[rd] = readMem(byteAddress, LH);
-        break;
-    default:
-        break;
+    switch (function) {
+        case 0:
+            display_pc_instruction("lb");
+            loadedValue = readMem(byteAddress, LB);
+            gpr[rd] = (loadedValue & 0x80) ? (loadedValue | 0xFFFFFF00) : loadedValue;
+            break;
+        case 1:
+            display_pc_instruction("lh");
+            loadedValue = readMem(byteAddress, LH);
+            gpr[rd] = (loadedValue & 0x8000) ? (loadedValue | 0xFFFF0000) : loadedValue;
+            break;
+        case 2:
+            display_pc_instruction("lw");
+            gpr[rd] = readMem(byteAddress, LW);
+            break;
+        case 4:
+            display_pc_instruction("lbu");
+            gpr[rd] = readMem(byteAddress, LB);
+            break;
+        case 5:
+            display_pc_instruction("lhu");
+            gpr[rd] = readMem(byteAddress, LH);
+            break;
+        default:
+            break;
     }
 }
+// End of Author: Sanjeev krishnan
 
+// Start of Author: Siddesh Patil
 void Logical() {
     uint32_t funct3 = FUNCT3(instruction);
     uint32_t funct7 = FUNCT7(instruction);
@@ -138,51 +137,112 @@ void Logical() {
     uint32_t immediate = IMMEDIATE(instruction);
     uint32_t shamt = RS2(instruction);
 
-    switch (funct3)
-    {
-    case 0:
-        display_pc_instruction("addi");
-        gpr[rd] = gpr[rs1] + immediate;
-        break;
-    case 0x2:
-        display_pc_instruction("slti");
-        gpr[rd] = ((int32_t)gpr[rs1] < (int32_t)immediate);
-        break;
-    case 0x3:
-        display_pc_instruction("sltiu");
-        gpr[rd] = (gpr[rs1] < immediate);
-        break;
-    case 0x4:
-        display_pc_instruction("xori");
-        gpr[rd] = gpr[rs1] ^ immediate;
-        break;
-    case 0x6:
-        display_pc_instruction("ori");
-        gpr[rd] = gpr[rs1] | immediate;
-        break;
-    case 0x7:
-        display_pc_instruction("andi");
-        gpr[rd] = gpr[rs1] & immediate;
-        break;
-    case 0x1:
-        display_pc_instruction("slli");
-        gpr[rd] = gpr[rs1] << shamt;
-        break;
-    case 0x5:
-        if (funct7 == 0) {
-            display_pc_instruction("srli");
-            gpr[rd] = gpr[rs1] >> shamt;
+    switch (funct3) {
+        case 0:
+            display_pc_instruction("addi");
+            gpr[rd] = gpr[rs1] + immediate;
             break;
-        } else {
-            display_pc_instruction("srai");
-            gpr[rd] = (gpr[rs1] & 0x80000000) ? (gpr[rs1] >> shamt | ~(0xFFFFFFFF >> shamt)) : gpr[rs1] >> shamt;
+        case 1:
+            display_pc_instruction("slli");
+            gpr[rd] = gpr[rs1] << shamt;
             break;
-        }
-    default:
-        break;
+        case 2:
+            display_pc_instruction("slti");
+            gpr[rd] = ((int32_t)gpr[rs1] < (int32_t)immediate);
+            break;
+        case 3:
+            display_pc_instruction("sltiu");
+            gpr[rd] = (gpr[rs1] < immediate);
+            break;
+        case 4:
+            display_pc_instruction("xori");
+            gpr[rd] = gpr[rs1] ^ immediate;
+            break;
+        case 5:
+            if (!funct7) {
+                display_pc_instruction("srli");
+                gpr[rd] = gpr[rs1] >> shamt;
+                break;
+            } else {
+                display_pc_instruction("srai");
+                gpr[rd] = (gpr[rs1] & 0x80000000) ? (gpr[rs1] >> shamt | ~(0xFFFFFFFF >> shamt)) : gpr[rs1] >> shamt;
+                break;
+            }
+        case 6:
+            display_pc_instruction("ori");
+            gpr[rd] = gpr[rs1] | immediate;
+            break;
+        case 7:
+            display_pc_instruction("andi");
+            gpr[rd] = gpr[rs1] & immediate;
+            break;
+        default:
+            break;
     }
 }
+// End of Author: Siddesh Patil
 
+// Start of Author: Satyajit Deokar
+void arithmetic(){
+    uint32_t funct3 = FUNCT3(instruction);
+    uint32_t funct7 = FUNCT7(instruction);
+    uint32_t rs1 = RS1(instruction);
+    uint32_t rs2 = RS2(instruction);
+    uint32_t rd = RD(instruction);
+    uint32_t shamt = RS2(instruction);
+    int32_t rs1_signed = (int32_t) gpr[rs1];
+
+    if(funct7 == 32){
+        switch (funct3){
+            case 0:
+                display_pc_instruction("sub");
+                gpr[rd] = gpr[rs1] - gpr[rs2];
+                break;
+            case 5:
+                display_pc_instruction("sra");
+                gpr[rd] = (uint32_t)(rs1_signed >> gpr[shamt]);
+                break;
+        }
+    } else if (funct7 == 0) {
+        switch(funct3){
+            case 0:
+                display_pc_instruction("add");
+                gpr[rd] = gpr[rs1] + gpr[rs2];
+                break;
+            case 1:
+                display_pc_instruction("sll");
+                gpr[rd] = gpr[rs1] << gpr[shamt];
+                break;
+            case 2:
+                display_pc_instruction("slt");
+                gpr[rd] = ((int32_t)gpr[rs1] < (int32_t)gpr[rs2])? 1 : 0;
+                break;
+            case 3:
+                display_pc_instruction("sltu");
+                gpr[rd] = (gpr[rs1] < gpr[rs2]) ? 1 : 0;
+                break;
+            case 4:
+                display_pc_instruction("xor");
+                gpr[rd] = gpr[rs1] ^ gpr[rs2];
+                break;
+            case 5:
+                display_pc_instruction("srl");
+                gpr[rd] = gpr[rs1] >> gpr[shamt];
+                break;
+            case 6:
+                display_pc_instruction("or");
+                gpr[rd] = gpr[rs1] | gpr[rs2];
+                break;
+            case 7:
+                display_pc_instruction("and");
+                gpr[rd] = gpr[rs1] & gpr[rs2];
+                break;
+        }
+    }
+}
+// End of Author: Satyajit Deokar
+
+// STart of Author: Sanjeev Krishnan
 void lui() {
     uint32_t rd = UPPER_IMMEDIATE(instruction);
     display_pc_instruction("lui");
@@ -229,31 +289,34 @@ int main(int argc, char *argv[4]) {
             break;
         } else {
             opcode = instruction & 0x7F;
-            switch (opcode)
-            {
-            case 0x23:
-                store();
-                pc += PC_INCREMENT;
-                break;
-            case 0x3:
-                load();
-                pc += PC_INCREMENT;
-                break;
-            case 0x13:
-                logical();
-                pc += PC_INCREMENT;
-                break;
-            case 0x37:
-                lui();
-                pc += PC_INCREMENT;
-                break;
-            case 0x17:
-                auipc();
-                pc += PC_INCREMENT;
-                break;
-            default:
-                pc += PC_INCREMENT;
-                break;
+            switch (opcode) {
+                case 0x23:
+                    store();
+                    pc += PC_INCREMENT;
+                    break;
+                case 0x3:
+                    load();
+                    pc += PC_INCREMENT;
+                    break;
+                case 0x13:
+                    logical();
+                    pc += PC_INCREMENT;
+                    break;
+                case 0x37:
+                    lui();
+                    pc += PC_INCREMENT;
+                    break;
+                case 0x17:
+                    auipc();
+                    pc += PC_INCREMENT;
+                    break;
+                case 0x33:
+                    arithmetic();
+                    pc += PC_INCREMENT;
+                    break;
+                default:
+                    pc += PC_INCREMENT;
+                    break;
             }
             displayRegisterFile();
         }
@@ -261,3 +324,4 @@ int main(int argc, char *argv[4]) {
 
     return 0;
 }
+// End of Author: Sanjeev krishnan
