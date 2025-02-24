@@ -227,7 +227,7 @@ int main(int argc, char *argv[4]) {
 		printf("Usage: %s [mem_file] [starting address] [stack address]\n", argv[0]);
         return 0;
 	}
-    memFile = argc > 1 ? fopen(argv[1], "r") : fopen("slti2.mem", "r");
+    memFile = argc > 1 ? fopen(argv[1], "r") : fopen("test_cases/Logical Immediates/ori2.mem", "r");
     if (!memFile) {
         perror("Error opening file");
         memFile = fopen("test.mem", "r");
