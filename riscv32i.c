@@ -8,7 +8,7 @@ FILE *memFile;
 uint8_t memory[MEMORY_SIZE];
 uint32_t address, instruction, pc, gpr[32] = {0}, opcode;
 
-// STart of Author: Sanjeev Krishnan
+// Start of Author: Sanjeev Krishnan
 void display_pc_instruction(char *instructionType) {
     printf("PC: %08x\n", pc);
     printf("Instruction type: %s\tInstruction: %08x\n\n", instructionType, instruction);
@@ -129,7 +129,7 @@ void load() {
 // End of Author: Sanjeev krishnan
 
 // Start of Author: Siddesh Patil
-void Logical() {
+void logical() {
     uint32_t funct3 = FUNCT3(instruction);
     uint32_t funct7 = FUNCT7(instruction);
     uint32_t rs1 = RS1(instruction);
@@ -242,7 +242,69 @@ void arithmetic(){
 }
 // End of Author: Satyajit Deokar
 
-// STart of Author: Sanjeev Krishnan
+// Start of Author: Neil Austin Tauro
+void jumpAndLink(){
+    uint32_t rd = RD(instruction);
+    uint32_t immediate = JAL_IMMEDIATE(instruction);
+	
+	display_pc_instruction("jal");
+	gpr[rd] = pc + 4;
+	pc = pc + immediate;
+}
+
+void jumpAndLinkReg(){
+    uint32_t rs1 = RS1(instruction);
+    uint32_t rd = RD(instruction);
+    uint32_t immediate = IMMEDIATE(instruction);
+	
+	display_pc_instruction("jalr");
+	gpr[rd] = pc + 4;
+	pc = (gpr[rs1] + immediate) & 0xFFFFFFFE;
+}
+
+void conditionalBranch(){
+    uint32_t funct3 = FUNCT3(instruction);
+    uint32_t rs1 = RS1(instruction);
+    uint32_t rs2 = RS2(instruction);
+	uint32_t immediate = IMMEDIATE_BRANCH(instruction);
+	
+	switch(funct3)
+	{
+		case 0: {	
+			display_pc_instruction("beq");
+            pc = (gpr[rs1] == gpr[rs2]) ? (pc + immediate) : (pc + 4);
+			break;
+		}	
+		case 1: {	
+			display_pc_instruction("bne");
+			pc = (gpr[rs1] != gpr[rs2]) ? (pc + immediate) : (pc + 4);
+		  break;
+		}
+		case 4: {
+			display_pc_instruction("blt");
+			pc = ((int32_t)gpr[rs1] < (int32_t)gpr[rs2]) ? (pc + immediate) : (pc + 4);
+			break;
+		}
+		case 5: {
+			display_pc_instruction("bge");
+			pc = ((int32_t)gpr[rs1] >= (int32_t)gpr[rs2]) ? (pc + immediate) : (pc + 4);
+			break;
+		}
+		case 6: {
+			display_pc_instruction("bltu");
+            pc = (gpr[rs1] < gpr[rs2]) ? (pc + immediate) : (pc + 4);
+			break;
+		}
+		case 7: {
+			display_pc_instruction("bgeu");
+            pc = (gpr[rs1] >= gpr[rs2]) ? (pc + immediate) : (pc + 4);
+			break;
+		}
+	}
+}
+// End of Author: Neil Austin Tauro
+
+// Start of Author: Sanjeev Krishnan
 void lui() {
     uint32_t rd = UPPER_IMMEDIATE(instruction);
     display_pc_instruction("lui");
@@ -313,6 +375,15 @@ int main(int argc, char *argv[4]) {
                 case 0x33:
                     arithmetic();
                     pc += PC_INCREMENT;
+                    break;
+                case 0x6f:
+                    jumpAndLink();
+                    break;
+                case 0x67:
+                    jumpAndLinkReg();
+                    break;
+                case 0x63:
+                    conditionalBranch();
                     break;
                 default:
                     pc += PC_INCREMENT;
