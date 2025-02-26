@@ -34,9 +34,9 @@
 #define T5 gpr[30]
 #define T6 gpr[31]
 
-#define LB 1
-#define LH 2
-#define LW 4
+#define BYTE 1
+#define HALF_WORD 2
+#define WORD 4
 
 #define RS1(instruction) ((instruction >> 15) & 0x1F)
 #define RS2(instruction) ((instruction >> 20) & 0x1F)
