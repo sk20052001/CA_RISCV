@@ -267,6 +267,7 @@ void jumpAndLink(){
         pc = pc + immediate;
     }
 }
+*/
 
 void jumpAndLinkReg(){
     uint32_t rs1 = RS1(instruction);
@@ -441,37 +442,6 @@ int main(int argc, char *argv[4]) {
             break;
         } else {
             opcode = instruction & 0x7F;
-<<<<<<< HEAD
-            switch (opcode)
-            {
-            case 0x23:
-                store();
-                pc += PC_INCREMENT;
-                break;
-            case 0x3:
-                load();
-                pc += PC_INCREMENT;
-                break;
-            case 0x13:
-                registerImmediate();
-                pc += PC_INCREMENT;
-                break;
-            case 0x37:
-                lui();
-                pc += PC_INCREMENT;
-                break;
-            case 0x17:
-                auipc();
-                pc += PC_INCREMENT;
-                break;
-            case 0x33:
-                arithmetic();
-                pc += PC_INCREMENT;
-                break;
-            default:
-                pc += PC_INCREMENT;
-                break;
-=======
             switch (opcode) {
                 case 0x23:
                     store();
@@ -509,7 +479,6 @@ int main(int argc, char *argv[4]) {
                 default:
                     pc += PC_INCREMENT;
                     break;
->>>>>>> c839f94ccea84b3796312252b3f45aeecc7c26fe
             }
             displayRegisterFile();
         }
