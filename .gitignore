@@ -7,7 +7,7 @@
 *.ko
 *.obj
 *.elf
-*.mem
+# *.mem
 
 # Linker output
 *.ilk
