@@ -1,14 +1,4 @@
-.global _boot
-.text
-
-_boot:                    /* x0  = 0    0x000 */
-    /* Test ADDI */
-.section .text
-.global _start
-
-_start:
-
-# ---------------------------------------
+ #---------------------------------------
 # Helper: Load immediate macro (manually expanded)
 # ---------------------------------------
 # Load -5 into x3: (since -5 fits in 12-bit immediate)
@@ -57,15 +47,3 @@ _start:
 # End of tests: Results stored in x10-x13
 # x10 = 0, x11 = 5, x12 = 0, x13 = 25
 # ---------------------------------------
-
-# Optional: Exit simulation (if supported)
-    addi a7, x0, 93         # a7 = exit syscall
-    ecall
-
-    la x6, variable
-    addi x6, x6, 4
-
-.data
-variable:
-	.word 0xdeadbeef
-                    

@@ -34,10 +34,9 @@
 #define T5 gpr[30]
 #define T6 gpr[31]
 
-#define UNSIGNED 1
-#define LB 1
-#define LH 2
-#define LW 4
+#define BYTE 1
+#define HALF_WORD 2
+#define WORD 4
 
 #define RS1(instruction) ((instruction >> 15) & 0x1F)
 #define RS2(instruction) ((instruction >> 20) & 0x1F)
@@ -46,4 +45,5 @@
 #define FUNCT7(instruction) ((instruction >> 25) & 0x7F)
 #define IMMEDIATE(instruction) (instruction & 0x80000000) ? (0xFFFFF000 | ((instruction >> 20) & 0xFFF)) : (instruction >> 20) & 0xFFF
 #define STORE_IMMEDIATE(instruction) ((instruction >> 31 ? 0xFFFFF000 : 0) | ((instruction >> 20) & 0xFE0) | ((instruction >> 7) & 0x1F))
-#define UPPER_IMMEDIATE(instruction) ((instruction >> 7) & 0x1F)
+#define JAL_IMMEDIATE(instruction) ((instruction >> 31 ? 0xFFFFF000 : 0) | (instruction & 0x000FF000) | ((instruction  & 0x00100000) & 9) | ((instruction & 0x40000000) >> 20))
+#define BRANCH_IMMEDIATE(instruction) ((instruction >> 31 ? 0xFFFFF000 : 0) | ((instruction >> 20) & 0xFE0) | ((instruction >> 7) & 0x1F)) | ((instruction << 4) & 0x800)
