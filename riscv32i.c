@@ -267,7 +267,6 @@ void jumpAndLink(){
         pc = pc + immediate;
     }
 }
-*/
 
 void jumpAndLinkReg(){
     uint32_t rs1 = RS1(instruction);
