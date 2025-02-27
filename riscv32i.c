@@ -132,13 +132,8 @@ void load() {
 }
 // End of Author: Sanjeev krishnan
 
-<<<<<<< HEAD
-/*
-void registerImmediate() {
-=======
 // Start of Author: Siddesh Patil
 void logical() {
->>>>>>> c839f94ccea84b3796312252b3f45aeecc7c26fe
     uint32_t funct3 = FUNCT3(instruction);
     uint32_t funct7 = FUNCT7(instruction);
     uint32_t rs1 = RS1(instruction);
@@ -417,11 +412,7 @@ int main(int argc, char *argv[4]) {
 		printf("Usage: %s [mem_file] [starting address] [stack address]\n", argv[0]);
         return 0;
 	}
-<<<<<<< HEAD
-    memFile = argc > 1 ? fopen(argv[1], "r") : fopen("test_cases/Logical Immediates/ori2.mem", "r");
-=======
     memFile = argc > 1 ? fopen(argv[1], "r") : fopen("./testcases/test.mem", "r");
->>>>>>> c839f94ccea84b3796312252b3f45aeecc7c26fe
     if (!memFile) {
         perror("Error opening file");
         memFile = fopen("./testcases/test.mem", "r");
@@ -449,41 +440,6 @@ int main(int argc, char *argv[4]) {
             break;
         } else {
             opcode = instruction & 0x7F;
-<<<<<<< HEAD
-            switch (opcode)
-            {
-            case 0x23:
-                store();
-                pc += PC_INCREMENT;
-                break;
-            case 0x3:
-                load();
-                pc += PC_INCREMENT;
-                break;
-/*            case 0x13:
-                registerImmediate();
-                pc += PC_INCREMENT;
-                break;
-*/
-            case 0x37:
-                lui();
-                pc += PC_INCREMENT;
-                break;
-            case 0x17:
-                auipc();
-                pc += PC_INCREMENT;
-                break;
-
-            // Siddesh starts here
-            case 0x13:
-                logical();
-                pc += PC_INCREMENT;
-                break;
-
-            default:
-                pc += PC_INCREMENT;
-                break;
-=======
             switch (opcode) {
                 case 0x23:
                     store();
@@ -521,7 +477,6 @@ int main(int argc, char *argv[4]) {
                 default:
                     pc += PC_INCREMENT;
                     break;
->>>>>>> c839f94ccea84b3796312252b3f45aeecc7c26fe
             }
             displayRegisterFile();
         }
@@ -529,7 +484,4 @@ int main(int argc, char *argv[4]) {
 
     return 0;
 }
-<<<<<<< HEAD
-=======
 // End of Author: Sanjeev krishnan
->>>>>>> c839f94ccea84b3796312252b3f45aeecc7c26fe
