@@ -286,7 +286,7 @@ void conditionalBranch(){
     uint32_t funct3 = FUNCT3(instruction);
     uint32_t rs1 = RS1(instruction);
     uint32_t rs2 = RS2(instruction);
-	uint32_t immediate = IMMEDIATE_BRANCH(instruction);
+	uint32_t immediate = BRANCH_IMMEDIATE(instruction);
 	
 	switch(funct3)
 	{
@@ -326,7 +326,7 @@ void conditionalBranch(){
 
 // Start of Author: Sanjeev Krishnan
 void lui() {
-    uint32_t rd = UPPER_IMMEDIATE(instruction);
+    uint32_t rd = RD(instruction);
 
     if (!rd) {
         return;
@@ -337,7 +337,7 @@ void lui() {
 }
 
 void auipc() {
-    uint32_t rd = UPPER_IMMEDIATE(instruction);
+    uint32_t rd = RD(instruction);
 
     if (!rd) {
         return;
@@ -353,10 +353,10 @@ int main(int argc, char *argv[4]) {
 		printf("Usage: %s [mem_file] [starting address] [stack address]\n", argv[0]);
         return 0;
 	}
-    memFile = argc > 1 ? fopen(argv[1], "r") : fopen("test.mem", "r");
+    memFile = argc > 1 ? fopen(argv[1], "r") : fopen("./testcases/test.mem", "r");
     if (!memFile) {
         perror("Error opening file");
-        memFile = fopen("test.mem", "r");
+        memFile = fopen("./testcases/test.mem", "r");
         if (!memFile) {
             perror("Error opening default file");
             return 0;
