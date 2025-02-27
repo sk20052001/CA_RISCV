@@ -1,13 +1,12 @@
 # Prerequisites
 *.d
-*.s
+
 
 # Object files
 *.o
 *.ko
 *.obj
 *.elf
-*.mem
 
 # Linker output
 *.ilk
