@@ -326,7 +326,7 @@ void conditionalBranch(){
 
 // Start of Author: Sanjeev Krishnan
 void lui() {
-    uint32_t rd = UPPER_IMMEDIATE(instruction);
+    uint32_t rd = RD(instruction);
 
     if (!rd) {
         return;
@@ -337,7 +337,7 @@ void lui() {
 }
 
 void auipc() {
-    uint32_t rd = UPPER_IMMEDIATE(instruction);
+    uint32_t rd = RD(instruction);
 
     if (!rd) {
         return;
