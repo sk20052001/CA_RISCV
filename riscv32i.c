@@ -264,6 +264,7 @@ void jumpAndLink(){
     } else {
         display_pc_instruction("jal");
         gpr[rd] = pc + 4;
+        pc += PC_INCREMENT;
         pc = pc + immediate;
     }
 }
@@ -278,7 +279,7 @@ void jumpAndLinkReg(){
     } else {
         display_pc_instruction("jalr");
         gpr[rd] = pc + 4;
-        pc = (gpr[rs1] + immediate) & 0xFFFFFFFE;
+        pc = gpr[rs1] + immediate;
     }
 }
 
@@ -293,6 +294,7 @@ void conditionalBranch(){
 		case 0: {	
 			display_pc_instruction("beq");
             pc = (gpr[rs1] == gpr[rs2]) ? (pc + immediate) : (pc + 4);
+            printf("%08x", pc);
 			break;
 		}	
 		case 1: {	
