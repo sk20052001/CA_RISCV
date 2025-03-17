@@ -263,6 +263,7 @@ void jumpAndLink(){
         return;
     } else {
         display_pc_instruction("jal");
+        printf("imm = %d)\n", immediate);
         gpr[rd] = pc + 4;
         pc += PC_INCREMENT;
         pc = pc + immediate;
@@ -273,13 +274,18 @@ void jumpAndLinkReg(){
     uint32_t rs1 = RS1(instruction);
     uint32_t rd = RD(instruction);
     uint32_t immediate = IMMEDIATE(instruction);
+    uint32_t target;
 	
     if (!rd) {
         return;
     } else {
         display_pc_instruction("jalr");
+        printf("imm = %d\n", immediate);
         gpr[rd] = pc + 4;
-        pc = gpr[rs1] + immediate;
+        target = gpr[rs1] + immediate + PC_INCREMENT;
+        target &= 0xfffffffe; 
+        pc = target;
+        printf("pc = %d\n", pc);
     }
 }
 
@@ -293,33 +299,33 @@ void conditionalBranch(){
 	{
 		case 0: {	
 			display_pc_instruction("beq");
-            pc = (gpr[rs1] == gpr[rs2]) ? (pc + immediate) : (pc + 4);
+            pc = (gpr[rs1] == gpr[rs2]) ? (pc + immediate) : (pc + PC_INCREMENT);
             printf("%08x", pc);
 			break;
 		}	
 		case 1: {	
 			display_pc_instruction("bne");
-			pc = (gpr[rs1] != gpr[rs2]) ? (pc + immediate) : (pc + 4);
+			pc = (gpr[rs1] != gpr[rs2]) ? (pc + immediate) : (pc + PC_INCREMENT);
 		  break;
 		}
 		case 4: {
 			display_pc_instruction("blt");
-			pc = ((int32_t)gpr[rs1] < (int32_t)gpr[rs2]) ? (pc + immediate) : (pc + 4);
+			pc = ((int32_t)gpr[rs1] < (int32_t)gpr[rs2]) ? (pc + immediate) : (pc + PC_INCREMENT);
 			break;
 		}
 		case 5: {
 			display_pc_instruction("bge");
-			pc = ((int32_t)gpr[rs1] >= (int32_t)gpr[rs2]) ? (pc + immediate) : (pc + 4);
+			pc = ((int32_t)gpr[rs1] >= (int32_t)gpr[rs2]) ? (pc + immediate) : (pc + PC_INCREMENT);
 			break;
 		}
 		case 6: {
 			display_pc_instruction("bltu");
-            pc = (gpr[rs1] < gpr[rs2]) ? (pc + immediate) : (pc + 4);
+            pc = (gpr[rs1] < gpr[rs2]) ? (pc + immediate) : (pc + PC_INCREMENT);
 			break;
 		}
 		case 7: {
 			display_pc_instruction("bgeu");
-            pc = (gpr[rs1] >= gpr[rs2]) ? (pc + immediate) : (pc + 4);
+            pc = (gpr[rs1] >= gpr[rs2]) ? (pc + immediate) : (pc + PC_INCREMENT);
 			break;
 		}
 	}
