@@ -259,13 +259,11 @@ void jumpAndLink(){
     uint32_t rd = RD(instruction);
     uint32_t immediate = JAL_IMMEDIATE(instruction);
 	
-    if (!rd) {
-        return;
-    } else {
-        display_pc_instruction("jal");
-        gpr[rd] = pc + 4;
-        pc = pc + immediate;
+    display_pc_instruction("jal");
+    if (rd) {
+        gpr[rd] = pc + PC_INCREMENT;
     }
+    pc = pc + immediate;
 }
 
 void jumpAndLinkReg(){
