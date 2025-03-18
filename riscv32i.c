@@ -1,17 +1,22 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <string.h>
 #include "defines.c"
 
 FILE *memFile;
 
 uint8_t memory[MEMORY_SIZE];
-uint32_t address, instruction, pc, gpr[32] = {0}, opcode;
+uint32_t address, instruction, pc, gpr[32] = {0}, opcode, prevInstruction, prevPC;
+char prevInstructionType[10];
 
 // Start of Author: Sanjeev Krishnan
 void display_pc_instruction(char *instructionType) {
-    printf("PC: %08x\n", pc);
-    printf("Instruction type: %s\tInstruction: %08x\n\n", instructionType, instruction);
+    #ifdef VERBOSE
+        printf("PC: %08x\n", pc);
+        printf("Instruction type: %s\tInstruction: %08x\n\n", instructionType, instruction);
+    #endif
+    strcpy(prevInstructionType, instructionType);
 }
 
 void displayRegisterFile() {
@@ -348,15 +353,21 @@ void auipc() {
 int main(int argc, char *argv[4]) {
     if (argc > 4)
 	{
-		printf("Usage: %s [mem_file] [starting address] [stack address]\n", argv[0]);
+        #ifdef DEBUG
+		    printf("Usage: %s [mem_file] [starting address] [stack address]\n", argv[0]);
+        #endif
         return 0;
 	}
-    memFile = argc > 1 ? fopen(argv[1], "r") : fopen("./testcases/test.mem", "r");
+    memFile = argc > 1 ? fopen(argv[1], "r") : fopen("./memory_image/test.mem", "r");
     if (!memFile) {
-        perror("Error opening file");
-        memFile = fopen("./testcases/test.mem", "r");
+        #ifdef DEBUG
+            perror("Error opening file");
+        #endif
+        memFile = fopen("./memory_image/test.mem", "r");
         if (!memFile) {
-            perror("Error opening default file");
+            #ifdef DEBUG
+                perror("Error opening default file");
+            #endif
             return 0;
         }
     }
@@ -365,8 +376,10 @@ int main(int argc, char *argv[4]) {
 
     while (fscanf(memFile, "%x: %x", &address, &instruction) == 2) {
         if (address + 3 >= MEMORY_SIZE) {
-            printf("Error: Address out of bounds (0x%hx)\n", address);
-            continue;
+            #ifdef DEBUG
+                printf("Error: Address out of bounds (0x%hx)\n", address);
+            #endif
+            break;
         }
         writeMem(address, WORD, instruction);
     }
@@ -374,10 +387,17 @@ int main(int argc, char *argv[4]) {
     fclose(memFile);
 
     while (1) {
+        prevInstruction = instruction;
         instruction = readMem(pc, WORD);
         if (!instruction) {
+            #ifndef VERBOSE
+                printf("PC: %08x\n", prevPC);
+                printf("Instruction type: %s\tInstruction: %08x\n\n", prevInstructionType, prevInstruction);
+                displayRegisterFile();
+            #endif
             break;
-        } else {
+        }
+        prevPC = pc;
             opcode = instruction & 0x7F;
             switch (opcode) {
                 case 0x23:
@@ -417,8 +437,9 @@ int main(int argc, char *argv[4]) {
                     pc += PC_INCREMENT;
                     break;
             }
-            displayRegisterFile();
-        }
+            #ifdef VERBOSE
+                displayRegisterFile();
+            #endif
     }
 
     return 0;
