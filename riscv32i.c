@@ -67,6 +67,7 @@ uint32_t readMem(uint32_t byteAddress, int numberOfBytes) {
     }
 }
 
+
 void store() {
     uint32_t function = FUNCT3(instruction);
     uint32_t rs1 = RS1(instruction);
@@ -274,6 +275,18 @@ void arithmetic(){
                     gpr[rd] = gpr[rs1] & gpr[rs2];
                     break;
             }
+        } else if (funct7 == 1){
+            switch(funct3){
+                case 0: //mul
+                case 1://mulh
+                case 2: //mulhsu
+                case 3: //mulhu
+                case 4: //div
+                case 5: //divu
+                case 6: //rem
+                case 7: //remu
+            }
+
         }
     }
 }
