@@ -284,33 +284,36 @@ void arithmetic(){
                 case 1://mulh
                     display_pc_instruction("mulh");
                    // int32_t rs1 = 
-                    (int32_t)gpr[rd] = (int32_t)gpr[rs1] * (int32_t)gpr[rs2]; 
+                    int64_t s_rs1 = (int64_t) gpr[rs1];
+                    int64_t s_rs2 = (int64_t) gpr[rs2];
+                    int64_t result = s_rs1 * s_rs2;
+                    gpr[rd] = (int32_t)(result >> 32); 
                     break; 
                 case 2: //mulhsu Multiply High Signed/Unsigned
                     display_pc_instruction("mulhsu");
-                    uint64_t unsigned_rs1 = (uint64_t)(gpr[rs1]);
-                    uint64_t unsigned_rs2 = (uint64_t)(gpr[rs2]);
-                    uint64_t mult64 = unsigned_rs1 * unsigned_rs2;    
-                    uint64_t mult64rsh = (mult64 >> 32);
-                    gpr[rd] = (uint32_t)mult64rsh;
+                    uint64_t unsigned_rs1 = (uint64_t) gpr[rs1];
+                    uint64_t unsigned_rs2 = (uint64_t) gpr[rs2];
+                    uint64_t m64 = unsigned_rs1 * unsigned_rs2;    
+                    uint64_t m64rsh = (m64 >> 32);
+                    gpr[rd] = (uint32_t) m64rsh;
                     break;
                 case 3: //mulhu
                     display_pc_instruction("mulhu");
-                    uint64_t unsigned_rs1 = (uint64_t)(gpr[rs1]);
-                    uint64_t unsigned_rs2 = (uint64_t)(gpr[rs2]);
+                    uint64_t u_rs1 = (uint64_t) gpr[rs1];
+                    uint64_t u_rs2 = (uint64_t) gpr[rs2];
                     // Left shift rs1 by 32 bits to prepare for signed extension
-                    int64_t leftshift_rs1 = unsigned_rs1 << 32;
+                    int64_t leftshift_rs1 = u_rs1 << 32;
                     // Perform signed extension
-                    int64_t signedtemp_rs1 = (int64_t)(leftshift_rs1);
+                    int64_t signedtemp_rs1 = (int64_t) leftshift_rs1;
                     int64_t signextend_rs1 = signedtemp_rs1 >> 32;
                     // Sign-extend rs1 to 64-bit signed value
-                    int64_t signed_rs1 = (int64_t)(signextend_rs1);
+                    int64_t signed_rs1 = (int64_t) signextend_rs1;
                     // Perform the multiplication (signed rs1 * unsigned rs2)
-                    uint64_t mult64 = signed_rs1 * unsigned_rs2;
+                    uint64_t mult64 = signed_rs1 * u_rs2;
                     // Extract the upper 32 bits of the result
                     uint64_t mult64rsh = (mult64 >> 32);
                     // Store the upper 32 bits in the destination register (rd)
-                    gpr[rd] = (uint32_t)(mult64rsh);
+                    gpr[rd] = (uint32_t) mult64rsh;
                     break;
                 case 4: //div
                     display_pc_instruction("div");
