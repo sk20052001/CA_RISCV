@@ -1,17 +1,22 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <string.h>
 #include "defines.c"
 
 FILE *memFile;
 
 uint8_t memory[MEMORY_SIZE];
-uint32_t address, instruction, pc, gpr[32] = {0}, opcode;
+uint32_t address, instruction, pc, gpr[32] = {0}, opcode, prevInstruction, prevPC;
+char prevInstructionType[10];
 
 // Start of Author: Sanjeev Krishnan
 void display_pc_instruction(char *instructionType) {
-    printf("PC: %08x\n", pc);
-    printf("Instruction type: %s\tInstruction: %08x\n\n", instructionType, instruction);
+    #ifdef VERBOSE
+        printf("PC: %08x\n", pc);
+        printf("Instruction type: %s\tInstruction: %08x\n\n", instructionType, instruction);
+    #endif
+    strcpy(prevInstructionType, instructionType);
 }
 
 void displayRegisterFile() {
@@ -99,35 +104,31 @@ void load() {
     uint32_t byteAddress = immediate + gpr[rs1];
     uint32_t loadedValue;
 
-    if (!rd) {
-        return;
-    } else {
-        switch (function) {
-            case 0:
-                display_pc_instruction("lb");
-                loadedValue = readMem(byteAddress, BYTE);
-                gpr[rd] = (loadedValue & 0x80) ? (loadedValue | 0xFFFFFF00) : loadedValue;
-                break;
-            case 1:
-                display_pc_instruction("lh");
-                loadedValue = readMem(byteAddress, HALF_WORD);
-                gpr[rd] = (loadedValue & 0x8000) ? (loadedValue | 0xFFFF0000) : loadedValue;
-                break;
-            case 2:
-                display_pc_instruction("lw");
-                gpr[rd] = readMem(byteAddress, WORD);
-                break;
-            case 4:
-                display_pc_instruction("lbu");
-                gpr[rd] = readMem(byteAddress, BYTE);
-                break;
-            case 5:
-                display_pc_instruction("lhu");
-                gpr[rd] = readMem(byteAddress, HALF_WORD);
-                break;
-            default:
-                break;
-        }
+    switch (function) {
+        case 0:
+            display_pc_instruction("lb");
+            loadedValue = readMem(byteAddress, BYTE);
+            gpr[rd] = rd ? ((loadedValue & 0x80) ? (loadedValue | 0xFFFFFF00) : loadedValue) : 0;
+            break;
+        case 1:
+                isplay_pc_instruction("lh");
+            loadedValue = readMem(byteAddress, HALF_WORD);
+            gpr[rd] = rd ? ((loadedValue & 0x8000) ? (loadedValue | 0xFFFF0000) : loadedValue) : 0;
+            break;
+        case 2:
+            display_pc_instruction("lw");
+            gpr[rd] = rd ? (readMem(byteAddress, WORD)) : 0;
+            break;
+        case 4:
+            display_pc_instruction("lbu");
+            gpr[rd] = rd ? (readMem(byteAddress, BYTE)) : 0;
+            break;
+        case 5:
+            display_pc_instruction("lhu");
+            gpr[rd] = rd ? (readMem(byteAddress, HALF_WORD)) : 0;
+            break;
+        default:
+            break;
     }
 }
 // End of Author: Sanjeev krishnan
@@ -141,51 +142,70 @@ void logical() {
     uint32_t immediate = IMMEDIATE(instruction);
     uint32_t shamt = RS2(instruction);
 
-    if (!rd) {
-        return;
-    } else {
-        switch (funct3) {
-            case 0:
-                display_pc_instruction("addi");
-                gpr[rd] = gpr[rs1] + immediate;
+    switch (funct3) {
+        case 0:
+            display_pc_instruction("addi");
+            gpr[rd] = rd ? (gpr[rs1] + immediate) : 0;
+            break;
+        case 1:
+            display_pc_instruction("slli");
+            gpr[rd] = rd ? (gpr[rs1] << shamt) : 0;
+            break;
+        case 2:
+            display_pc_instruction("slti");
+            gpr[rd] = rd ? (((int32_t)gpr[rs1] < (int32_t)immediate)) : 0;
+            break;
+        case 3:
+            display_pc_instruction("sltiu");
+            gpr[rd] = rd ? ((gpr[rs1] < immediate)) : 0;
+            break;
+        case 4:
+            display_pc_instruction("xori");
+            gpr[rd] = rd ? (gpr[rs1] ^ immediate) : 0;
+            break;
+        case 5:
+            if (!funct7) {
+                display_pc_instruction("srli");
+                gpr[rd] = rd ? (gpr[rs1] >> shamt) : 0;
                 break;
-            case 1:
-                display_pc_instruction("slli");
-                gpr[rd] = gpr[rs1] << shamt;
+            } else {
+                display_pc_instruction("srai");
+                gpr[rd] = rd ? ((gpr[rs1] & 0x80000000) ? (gpr[rs1] >> shamt | ~(0xFFFFFFFF >> shamt)) : gpr[rs1] >> shamt) : 0;
                 break;
-            case 2:
-                display_pc_instruction("slti");
-                gpr[rd] = ((int32_t)gpr[rs1] < (int32_t)immediate);
-                break;
-            case 3:
-                display_pc_instruction("sltiu");
-                gpr[rd] = (gpr[rs1] < immediate);
-                break;
-            case 4:
-                display_pc_instruction("xori");
-                gpr[rd] = gpr[rs1] ^ immediate;
-                break;
-            case 5:
-                if (!funct7) {
-                    display_pc_instruction("srli");
-                    gpr[rd] = gpr[rs1] >> shamt;
-                    break;
-                } else {
-                    display_pc_instruction("srai");
-                    gpr[rd] = (gpr[rs1] & 0x80000000) ? (gpr[rs1] >> shamt | ~(0xFFFFFFFF >> shamt)) : gpr[rs1] >> shamt;
-                    break;
-                }
-            case 6:
-                display_pc_instruction("ori");
-                gpr[rd] = gpr[rs1] | immediate;
-                break;
-            case 7:
-                display_pc_instruction("andi");
-                gpr[rd] = gpr[rs1] & immediate;
-                break;
-            default:
-                break;
-        }
+            }
+        case 6:
+            display_pc_instruction("ori");
+            gpr[rd] = rd ? (gpr[rs1] | immediate) : 0;
+            break;
+        case 7:
+            display_pc_instruction("andi");
+            gpr[rd] = rd ? (gpr[rs1] & immediate) : 0;
+            break;
+        default:
+            break;
+    }
+}
+
+void ecall() {
+    switch (gpr[A7]) { 
+        case 63:                // read ecall
+            display_pc_instruction("System Call - Read");
+            gpr[A0] = read(0, &memory[gpr[A1]], gpr[A2]);
+            break;
+
+        case 64:                    // write ecall
+            display_pc_instruction("System Call - Write");
+            gpr[A0] = write(1, &memory[gpr[A1]], gpr[A2]);
+            break;
+
+        case 94:                    // exit ecall
+            display_pc_instruction("System Call - Exit");
+            exit(gpr[A0]);
+            break;
+
+        default:
+            printf("Unknown System Call (ecall): %d\n", gpr[A7]);
+            exit(1);
     }
 }
 // End of Author: Siddesh Patil
@@ -200,55 +220,115 @@ void arithmetic(){
     uint32_t shamt = RS2(instruction);
     int32_t rs1_signed = (int32_t) gpr[rs1];
 
-    if (!rd) {
-        return;
-    } else {
-        if(funct7 == 32){
-            switch (funct3){
-                case 0:
-                    display_pc_instruction("sub");
-                    gpr[rd] = gpr[rs1] - gpr[rs2];
-                    break;
-                case 5:
-                    display_pc_instruction("sra");
-                    gpr[rd] = (uint32_t)(rs1_signed >> gpr[shamt]);
-                    break;
+    if(funct7 == 32){
+        switch (funct3){
+            case 0:
+                display_pc_instruction("sub");
+                gpr[rd] = rd ? (gpr[rs1] - gpr[rs2]) : 0;
+                break;
+            case 5:
+                display_pc_instruction("sra");
+                gpr[rd] = rd ? ((uint32_t)(rs1_signed >> gpr[shamt])) : 0;
+                break;
             }
-        } else if (funct7 == 0) {
-            switch(funct3){
-                case 0:
-                    display_pc_instruction("add");
-                    gpr[rd] = gpr[rs1] + gpr[rs2];
-                    break;
-                case 1:
-                    display_pc_instruction("sll");
-                    gpr[rd] = gpr[rs1] << gpr[shamt];
-                    break;
-                case 2:
-                    display_pc_instruction("slt");
-                    gpr[rd] = ((int32_t)gpr[rs1] < (int32_t)gpr[rs2])? 1 : 0;
-                    break;
-                case 3:
-                    display_pc_instruction("sltu");
-                    gpr[rd] = (gpr[rs1] < gpr[rs2]) ? 1 : 0;
-                    break;
-                case 4:
-                    display_pc_instruction("xor");
-                    gpr[rd] = gpr[rs1] ^ gpr[rs2];
-                    break;
-                case 5:
-                    display_pc_instruction("srl");
-                    gpr[rd] = gpr[rs1] >> gpr[shamt];
-                    break;
-                case 6:
-                    display_pc_instruction("or");
-                    gpr[rd] = gpr[rs1] | gpr[rs2];
-                    break;
-                case 7:
-                    display_pc_instruction("and");
-                    gpr[rd] = gpr[rs1] & gpr[rs2];
-                    break;
+    } else if (funct7 == 0) {
+        switch(funct3){
+            case 0:
+                display_pc_instruction("add");
+                gpr[rd] = rd ? (gpr[rs1] + gpr[rs2]) : 0;
+                break;
+            case 1:
+                display_pc_instruction("sll");
+                gpr[rd] = rd ? (gpr[rs1] << gpr[shamt]) : 0;
+                break;
+            case 2:
+                display_pc_instruction("slt");
+                gpr[rd] = rd ? (((int32_t)gpr[rs1] < (int32_t)gpr[rs2])? 1 : 0) : 0;
+                break;
+            case 3:
+                display_pc_instruction("sltu");
+                gpr[rd] = rd ? ((gpr[rs1] < gpr[rs2]) ? 1 : 0) : 0;
+                break;
+            case 4:
+                display_pc_instruction("xor");
+                gpr[rd] = rd ? (gpr[rs1] ^ gpr[rs2]) : 0;
+                break;
+            case 5:
+                display_pc_instruction("srl");
+                gpr[rd] = rd ? (gpr[rs1] >> gpr[shamt]) : 0;
+                break;
+            case 6:
+                display_pc_instruction("or");
+                gpr[rd] = rd ? (gpr[rs1] | gpr[rs2]) : 0;
+                break;
+            case 7:
+                display_pc_instruction("and");
+                gpr[rd] = rd ? (gpr[rs1] & gpr[rs2]) : 0;
+                break;
             }
+    } else if (funct7 == 1){
+        switch(funct3){
+            case 0:
+                display_pc_instruction("mul");
+                gpr[rd] = rd ? (gpr[rs1] * gpr[rs2]) : 0; 
+                break; //mul
+            case 1://mulh
+                display_pc_instruction("mulh");
+                // int32_t rs1 = 
+                int64_t s_rs1 = (int64_t) gpr[rs1];
+                int64_t s_rs2 = (int64_t) gpr[rs2];
+                int64_t result = s_rs1 * s_rs2;
+                gpr[rd] = rd ? ((int32_t)(result >> 32)) : 0; 
+                break; 
+            case 2: //mulhsu Multiply High Signed/Unsigned
+                display_pc_instruction("mulhsu");
+                uint64_t unsigned_rs1 = (uint64_t) gpr[rs1];
+                uint64_t unsigned_rs2 = (uint64_t) gpr[rs2];
+                uint64_t m64 = unsigned_rs1 * unsigned_rs2;    
+                uint64_t m64rsh = (m64 >> 32);
+                gpr[rd] = rd ? ((uint32_t) m64rsh) : 0;
+                break;
+            case 3: //mulhu
+                display_pc_instruction("mulhu");
+                uint64_t u_rs1 = (uint64_t) gpr[rs1];
+                uint64_t u_rs2 = (uint64_t) gpr[rs2];
+                // Left shift rs1 by 32 bits to prepare for signed extension
+                int64_t leftshift_rs1 = u_rs1 << 32;
+                // Perform signed extension
+                int64_t signedtemp_rs1 = (int64_t) leftshift_rs1;
+                int64_t signextend_rs1 = signedtemp_rs1 >> 32;
+                // Sign-extend rs1 to 64-bit signed value
+                int64_t signed_rs1 = (int64_t) signextend_rs1;
+                // Perform the multiplication (signed rs1 * unsigned rs2)
+                uint64_t mult64 = signed_rs1 * u_rs2;
+                // Extract the upper 32 bits of the result
+                uint64_t mult64rsh = (mult64 >> 32);
+                // Store the upper 32 bits in the destination register (rd)
+                gpr[rd] = rd ? ((uint32_t) mult64rsh) : 0;
+                break;
+            case 4: //div
+                display_pc_instruction("div");
+                if ((int32_t) gpr[rs1] == 0x80000000 && (int32_t) gpr[rs2]==0xffffffff) gpr[rd] = 0x80000000;
+                    else gpr[rd] = rd ? ((int32_t) gpr[rs2] == 0 ? 0xFFFFFFFF : (int32_t) gpr[rs1] / (int32_t) gpr[rs2]) : 0;
+                break;
+            case 5: //divu
+                display_pc_instruction("divu");
+                gpr[rd] = rd ? (rs2==0 ? 0xFFFFFFFF : rs1 / rs2) : 0;
+                break;
+            case 6: //rem
+                if ((int32_t) gpr[rs2] == 0) { 	
+                    gpr[rd] = rd ? ((int32_t) gpr[rs1]) : 0;
+                } else {
+                    gpr[rd] = rd ? ((int32_t) gpr[rs1] % (int32_t) gpr[rs2]) : 0;
+                }
+                break;
+            case 7: //remu
+                if (gpr[rs2] == 0) {
+                    gpr[rd] = rd ? (gpr[rs1]) : 0;
+                } else {
+                    gpr[rd] = rd ? (gpr[rs1] % gpr[rs2]) : 0;
+                }
+                break;
         }
     }
 }
@@ -260,9 +340,7 @@ void jumpAndLink(){
     uint32_t immediate = JAL_IMMEDIATE(instruction);
 	
     display_pc_instruction("jal");
-    if (rd) {
-        gpr[rd] = pc + PC_INCREMENT;
-    }
+        gpr[rd] = rd ? (pc + PC_INCREMENT) : 0;
     pc = pc + immediate;
 }
 
@@ -270,14 +348,10 @@ void jumpAndLinkReg(){
     uint32_t rs1 = RS1(instruction);
     uint32_t rd = RD(instruction);
     uint32_t immediate = IMMEDIATE(instruction);
-	
-    if (!rd) {
-        return;
-    } else {
-        display_pc_instruction("jalr");
-        gpr[rd] = pc + 4;
-        pc = (gpr[rs1] + immediate) & 0xFFFFFFFE;
-    }
+
+    display_pc_instruction("jalr");
+    gpr[rd] = rd ? (pc + 4) : 0;
+    pc = (gpr[rs1] + immediate) & 0xFFFFFFFE;
 }
 
 void conditionalBranch(){
@@ -325,38 +399,34 @@ void conditionalBranch(){
 // Start of Author: Sanjeev Krishnan
 void lui() {
     uint32_t rd = RD(instruction);
-
-    if (!rd) {
-        return;
-    } else {
-        display_pc_instruction("lui");
-        gpr[rd] = instruction & 0xFFFFFF000;
-    }
+    display_pc_instruction("lui");
+    gpr[rd] = rd ? (instruction & 0xFFFFFF000) : 0;
 }
 
 void auipc() {
     uint32_t rd = RD(instruction);
-
-    if (!rd) {
-        return;
-    } else {
-        display_pc_instruction("auipc");
-        gpr[rd] = (instruction & 0xFFFFF000) + pc;
-    }
+    display_pc_instruction("auipc");
+    gpr[rd] = rd ? ((instruction & 0xFFFFF000) + pc) : 0;
 }
 
 int main(int argc, char *argv[4]) {
     if (argc > 4)
 	{
-		printf("Usage: %s [mem_file] [starting address] [stack address]\n", argv[0]);
+        #ifdef DEBUG
+		    printf("Usage: %s [mem_file] [starting address] [stack address]\n", argv[0]);
+        #endif
         return 0;
 	}
-    memFile = argc > 1 ? fopen(argv[1], "r") : fopen("./testcases/test.mem", "r");
+    memFile = argc > 1 ? fopen(argv[1], "r") : fopen("./memory_image/test.mem", "r");
     if (!memFile) {
-        perror("Error opening file");
-        memFile = fopen("./testcases/test.mem", "r");
+        #ifdef DEBUG
+            perror("Error opening file");
+        #endif
+        memFile = fopen("./memory_image/test.mem", "r");
         if (!memFile) {
-            perror("Error opening default file");
+            #ifdef DEBUG
+                perror("Error opening default file");
+            #endif
             return 0;
         }
     }
@@ -365,8 +435,10 @@ int main(int argc, char *argv[4]) {
 
     while (fscanf(memFile, "%x: %x", &address, &instruction) == 2) {
         if (address + 3 >= MEMORY_SIZE) {
-            printf("Error: Address out of bounds (0x%hx)\n", address);
-            continue;
+            #ifdef DEBUG
+                printf("Error: Address out of bounds (0x%hx)\n", address);
+            #endif
+            break;
         }
         writeMem(address, WORD, instruction);
     }
@@ -374,10 +446,17 @@ int main(int argc, char *argv[4]) {
     fclose(memFile);
 
     while (1) {
+        prevInstruction = instruction;
         instruction = readMem(pc, WORD);
         if (!instruction) {
+            #ifndef VERBOSE
+                printf("PC: %08x\n", prevPC);
+                printf("Instruction type: %s\tInstruction: %08x\n\n", prevInstructionType, prevInstruction);
+                displayRegisterFile();
+            #endif
             break;
-        } else {
+        }
+        prevPC = pc;
             opcode = instruction & 0x7F;
             switch (opcode) {
                 case 0x23:
@@ -413,12 +492,17 @@ int main(int argc, char *argv[4]) {
                 case 0x63:
                     conditionalBranch();
                     break;
+                case 0x73:
+                    ecall();
+                    pc += PC_INCREMENT;
+                    break;
                 default:
                     pc += PC_INCREMENT;
                     break;
             }
-            displayRegisterFile();
-        }
+            #ifdef VERBOSE
+                displayRegisterFile();
+            #endif
     }
 
     return 0;
