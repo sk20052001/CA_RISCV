@@ -12,12 +12,13 @@ _start:
 .word 0
 
 taken2:
-	addi x19, x19, 10
+	addi x18, x18, 10
 	blt x18, x19, taken
 	addi x19, x19, 11
 .word 0
 
 taken:
-	addi x18, x18, 11
+	addi x18, x18, -20
+	addi x19, x19, -20
 	blt x18, x19, taken2
 .word 0

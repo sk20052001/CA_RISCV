@@ -5,7 +5,7 @@
 _start:
 	addi x18, x18, 12
 	addi x19, x19, 11
-	beq x18, x19, taken
+	bne x18, x19, taken
 	addi x10, x10, 20
 .word 0
 
