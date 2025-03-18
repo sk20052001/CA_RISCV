@@ -277,10 +277,41 @@ void arithmetic(){
             }
         } else if (funct7 == 1){
             switch(funct3){
-                case 0: //mul
+                case 0:
+                    display_pc_instruction("mul");
+                    gpr[rd] = gpr[rs1] * gpr[rs2]; 
+                    break; //mul
                 case 1://mulh
-                case 2: //mulhsu
+                    display_pc_instruction("mulh");
+                   // int32_t rs1 = 
+                    (int32_t)gpr[rd] = (int32_t)gpr[rs1] * (int32_t)gpr[rs2]; 
+                    break; 
+                case 2: //mulhsu Multiply High Signed/Unsigned
+                    display_pc_instruction("mulhsu");
+                    uint64_t unsigned_rs1 = (uint64_t)(gpr[rs1]);
+                    uint64_t unsigned_rs2 = (uint64_t)(gpr[rs2]);
+                    uint64_t mult64 = unsigned_rs1 * unsigned_rs2;    
+                    uint64_t mult64rsh = (mult64 >> 32);
+                    gpr[rd] = (uint32_t)mult64rsh;
+                    break;
                 case 3: //mulhu
+                    display_pc_instruction("mulhu");
+                    uint64_t unsigned_rs1 = (uint64_t)(gpr[rs1]);
+                    uint64_t unsigned_rs2 = (uint64_t)(gpr[rs2]);
+                    // Left shift rs1 by 32 bits to prepare for signed extension
+                    int64_t leftshift_rs1 = unsigned_rs1 << 32;
+                    // Perform signed extension
+                    int64_t signedtemp_rs1 = (int64_t)(leftshift_rs1);
+                    int64_t signextend_rs1 = signedtemp_rs1 >> 32;
+                    // Sign-extend rs1 to 64-bit signed value
+                    int64_t signed_rs1 = (int64_t)(signextend_rs1);
+                    // Perform the multiplication (signed rs1 * unsigned rs2)
+                    uint64_t mult64 = signed_rs1 * unsigned_rs2;
+                    // Extract the upper 32 bits of the result
+                    uint64_t mult64rsh = (mult64 >> 32);
+                    // Store the upper 32 bits in the destination register (rd)
+                    gpr[rd] = (uint32_t)(mult64rsh);
+                    break;
                 case 4: //div
                     display_pc_instruction("div");
                     if ((int32_t) gpr[rs1] == 0x80000000 && (int32_t) gpr[rs2]==0xffffffff) gpr[rd] = 0x80000000;
