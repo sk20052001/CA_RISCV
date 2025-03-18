@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <unistd.h>     //added for inbuilt read(), write() ops
 #include "defines.c"
 
 FILE *memFile;
@@ -188,6 +189,30 @@ void logical() {
         }
     }
 }
+
+void ecall() {
+    switch (gpr[17]) { 
+        case 63:                // read ecall
+            display_pc_instruction("System Call - Read");
+            gpr[10] = read(0, &memory[gpr[11]], gpr[12]);
+            break;
+
+        case 64:                    // write ecall
+            display_pc_instruction("System Call - Write");
+            gpr[10] = write(1, &memory[gpr[11]], gpr[12]);
+            break;
+
+        case 94:                    // exit ecall
+            display_pc_instruction("System Call - Exit");
+            exit(gpr[10]);
+            break;
+
+        default:
+            printf("Unknown System Call (ecall): %d\n", gpr[17]);
+            exit(1);
+    }
+}
+
 // End of Author: Siddesh Patil
 
 // Start of Author: Satyajit Deokar
@@ -473,6 +498,10 @@ int main(int argc, char *argv[4]) {
                     break;
                 case 0x63:
                     conditionalBranch();
+                    break;
+                case 0x73:      // for ECALL instruction
+                    ecall();
+                    pc += PC_INCREMENT;
                     break;
                 default:
                     pc += PC_INCREMENT;
