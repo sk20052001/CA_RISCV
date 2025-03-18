@@ -282,9 +282,30 @@ void arithmetic(){
                 case 2: //mulhsu
                 case 3: //mulhu
                 case 4: //div
+                    display_pc_instruction("div");
+                    if ((int32_t) gpr[rs1] == 0x80000000 && (int32_t) gpr[rs2]==0xffffffff) gpr[rd] = 0x80000000;
+                    else gpr[rd] = (int32_t) gpr[rs2] == 0 ? 0xFFFFFFFF : (int32_t) gpr[rs1] / (int32_t) gpr[rs2];
+                    break;
                 case 5: //divu
+                    display_pc_instruction("divu");
+                    gpr[rd] = rs2==0 ? 0xFFFFFFFF : rs1 / rs2;
+                    break;
                 case 6: //rem
+                    if ((int32_t) gpr[rs2] == 0) { 	
+                        gpr[rd] = (int32_t) gpr[rs1];
+                    }
+                    else {
+                        gpr[rd] = (int32_t) gpr[rs1] % (int32_t) gpr[rs2];
+                    }
+                    break;
                 case 7: //remu
+                    if (gpr[rs2] == 0) {
+                        gpr[rd] = gpr[rs1];
+                    }
+                    else {
+                        gpr[rd] = gpr[rs1] % gpr[rs2];
+                    }
+                    break;
             }
 
         }
