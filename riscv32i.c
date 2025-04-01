@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#include <unistd.h>
 #include "defines.c"
 
 FILE *memFile;
@@ -111,7 +112,7 @@ void load() {
             gpr[rd] = rd ? ((loadedValue & 0x80) ? (loadedValue | 0xFFFFFF00) : loadedValue) : 0;
             break;
         case 1:
-                isplay_pc_instruction("lh");
+            display_pc_instruction("lh");
             loadedValue = readMem(byteAddress, HALF_WORD);
             gpr[rd] = rd ? ((loadedValue & 0x8000) ? (loadedValue | 0xFFFF0000) : loadedValue) : 0;
             break;
