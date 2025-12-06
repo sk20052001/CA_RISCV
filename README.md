@@ -1,4 +1,4 @@
-simulation of RISC-V 32I based Instruction Set Architecture.
+simulation of RISC-V 32IM based Instruction Set Architecture.
 
 ## Project File Structure
 
